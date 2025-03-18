@@ -1,7 +1,7 @@
 ClearAir
 ========
 
-#### Shane Tully (shanetully.com)
+#### Kira Tully (ephemeral.cx)
 
 A minimalist, DIY PurpleAir clone.
 
@@ -36,19 +36,11 @@ A Fritzing file is located at `docs/ClearAir.fzz`.
 
 Wiring diagram: ![](/docs/wiring_diagram.png?raw=true)
 
-### Setting up the software dependencies
-
-These instructions are for Linux (x86_64).
-
-* Download and extract the [Adafruit SAMD library](https://github.com/adafruit/arduino-board-index/raw/gh-pages/boards/adafruit-samd-1.0.9.tar.bz2) to `~/.arduino15/packages/adafruit/hardware/samd/1.0.9`
-* Download and extract the [ARM compiler](http://downloads.arduino.cc/gcc-arm-none-eabi-4.8.3-2014q1-linux64.tar.gz) to `~/.arduino15/packages/adafruit/tools/arm-none-eabi-gcc/4.8.3-2014q1`
-* Download and extract [Bossac](http://downloads.arduino.cc/bossac-1.6.1-arduino-x86_64-linux-gnu.tar.gz) to `~/.arduino15/packages/adafruit/tools/bossac/1.6.1-arduino`.
-* Download and extract [CMSIS](http://downloads.arduino.cc/CMSIS-4.0.0.tar.bz2) to `~/.arduino15/packages/adafruit/tools/CMSIS/4.0.0-atmel`.
-
-Note: The archives above can be extracted whenever you'd like, but the paths at the top of the Makefile must be adjusted accordingly.
-
 ### Compiling & Uploading
 
+These instructions are for Linux.
+
+1. Run `scripts/download_dependencies.sh` to download tooling dependencies.
 1. Create `src/secrets.h` with the following content:
     ```
     #define _SSID "your_ssid"
@@ -78,7 +70,6 @@ An example response is as such:
   "humidity": 53.14,
   "pressure": 1001.74
 }
-
 ```
 
 ### Networking
@@ -87,17 +78,4 @@ The default port is 2424. Don't forget to add rules to allow communication on th
 
 ## License
 
-Copyright (C) 2021 Shane Tully
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+GPLv3

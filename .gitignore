@@ -1,5 +1,3 @@
-dewpoint.log
-
 bin/deploy
+deps/**
 src/secrets.h
-

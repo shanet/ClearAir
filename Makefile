@@ -3,26 +3,26 @@
 BOARD := adafruit_feather_m0
 DEVICE := ttyACM0
 TARGET := clearair
-PACKAGE_DIR := $(HOME)/.arduino15/packages/adafruit
-SAMD_DIR := $(PACKAGE_DIR)/hardware/samd/1.0.9
 BAUD := 9600
 
 SOURCES := $(wildcard $(addprefix src/, *.c *.cpp))
 HEADERS :=  $(wildcard $(addprefix src/, *.h))
 OUTPUT := bin/deploy
 
-# Tools
+# Dependencies & tooling
 # -------------------------------------------------------------------------------------------------------------
-TOOLS_DIR := $(PACKAGE_DIR)/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin
-CC := $(TOOLS_DIR)/arm-none-eabi-gcc
-CPPC := $(TOOLS_DIR)/arm-none-eabi-g++
-AR := $(TOOLS_DIR)/arm-none-eabi-ar
-OBJCOPY := $(TOOLS_DIR)/arm-none-eabi-objcopy
-UPLOADER := $(PACKAGE_DIR)/tools/bossac/1.6.1-arduino/bossac
+DEPENDENCIES_DIR := deps
+PLATFORM_DIR := $(DEPENDENCIES_DIR)/arm
+
+CC := $(DEPENDENCIES_DIR)/gcc-arm/bin/arm-none-eabi-gcc
+CPPC := $(DEPENDENCIES_DIR)/gcc-arm/bin/arm-none-eabi-g++
+AR := $(DEPENDENCIES_DIR)/gcc-arm/bin/arm-none-eabi-ar
+OBJCOPY := $(DEPENDENCIES_DIR)/gcc-arm/bin/arm-none-eabi-objcopy
+UPLOADER := $(DEPENDENCIES_DIR)/bossac/bossac
 
 # Board info
 # -------------------------------------------------------------------------------------------------------------
-GET_BOARDS_PARAM = $(shell sed -ne "s/$(BOARD).$(1)=\(.*\)/\1/p" $(SAMD_DIR)/boards.txt)
+GET_BOARDS_PARAM = $(shell sed -ne "s/$(BOARD).$(1)=\(.*\)/\1/p" $(PLATFORM_DIR)/boards.txt)
 
 BOARD_BOARD := $(call GET_BOARDS_PARAM,build.board)
 BOARD_BOOTLOADER_FILE := $(call GET_BOARDS_PARAM,bootloader.file)
@@ -36,7 +36,7 @@ BOARD_USB_PRODUCT := $(call GET_BOARDS_PARAM,build.usb_product)
 BOARD_USB_VID := $(call GET_BOARDS_PARAM,build.vid)
 
 # The variant file for the board contains essential information specific to the device we're compiling for
-SOURCES += $(SAMD_DIR)/variants/$(BOARD_BUILD_VARIANT)/variant.cpp
+SOURCES += $(PLATFORM_DIR)/variants/$(BOARD_BUILD_VARIANT)/variant.cpp
 
 OBJECTS := $(addsuffix .o, $(basename $(SOURCES)))
 COMPILED_OBJECTS := $(addprefix $(OUTPUT)/, $(addsuffix .o, $(basename $(SOURCES))))
@@ -62,12 +62,12 @@ DEFINES := -DF_CPU=$(BOARD_BUILD_FCPU) -DARDUINO=10605 -DARDUINO_$(BOARD_BOARD) 
 # -------------------------------------------------------------------------------------------------------------
 INCLUDE_DIRS := lib/ \
 	$(wildcard lib/*) \
-	$(PACKAGE_DIR)/tools/CMSIS/4.0.0-atmel/CMSIS/Include/ \
-	$(PACKAGE_DIR)/tools/CMSIS/4.0.0-atmel/Device/ATMEL/ \
-	$(SAMD_DIR)/cores/arduino \
-	$(SAMD_DIR)/variants/$(BOARD_BUILD_VARIANT) \
-	$(SAMD_DIR)/libraries/SPI \
-	$(SAMD_DIR)/libraries/Wire
+	$(DEPENDENCIES_DIR)/cmsis/CMSIS/Include/ \
+	$(DEPENDENCIES_DIR)/cmsis/Device/ATMEL/ \
+	$(PLATFORM_DIR)/cores/arduino \
+	$(PLATFORM_DIR)/variants/$(BOARD_BUILD_VARIANT) \
+	$(PLATFORM_DIR)/libraries/SPI \
+	$(PLATFORM_DIR)/libraries/Wire
 
 # Add the include flag before each include
 INCLUDES := $(foreach dir, $(INCLUDE_DIRS), \
@@ -75,7 +75,7 @@ INCLUDES := $(foreach dir, $(INCLUDE_DIRS), \
 
 # Project Libraries
 # -------------------------------------------------------------------------------------------------------------
-LIBRARY_SEARCH_PATHS ?= lib $(SAMD_DIR)/libraries
+LIBRARY_SEARCH_PATHS ?= lib $(PLATFORM_DIR)/libraries
 
 # Search the headers for what libraries are included
 FOUND_LIBRARIES := $(filter $(notdir $(wildcard $(addsuffix /*, $(LIBRARY_SEARCH_PATHS)))), \
@@ -93,9 +93,9 @@ LIBRARY_DIRS += $(foreach lib, $(EXPLICIT_LIBRARIES), \
 
 # Platform Libraries
 # -------------------------------------------------------------------------------------------------------------
-ARDUINOCOREDIR := $(SAMD_DIR)/cores/arduino/ \
-	$(SAMD_DIR)/cores/arduino/USB/ \
-	$(SAMD_DIR)/cores/arduino/avr/
+ARDUINOCOREDIR := $(PLATFORM_DIR)/cores/arduino/ \
+	$(PLATFORM_DIR)/cores/arduino/USB/ \
+	$(PLATFORM_DIR)/cores/arduino/avr/
 
 # Link all the platform libraries into a single archive
 CORE_LIB := $(OUTPUT)/core.a
@@ -124,7 +124,7 @@ $(TARGET).bin: $(TARGET).elf
 	$(OBJCOPY) -O binary $(OUTPUT)/$< $(OUTPUT)/$@
 
 $(TARGET).elf: $(CORE_LIB) $(OBJECTS)
-	$(CC) -L$(OUTPUT) -T$(SAMD_DIR)/variants/$(BOARD_BUILD_VARIANT)/$(BOARD_LD_SCRIPT) \
+	$(CC) -L$(OUTPUT) -T$(PLATFORM_DIR)/variants/$(BOARD_BUILD_VARIANT)/$(BOARD_LD_SCRIPT) \
 		-Wl,-Map,$(OUTPUT)/$(TARGET).map $(ELFFLAGS) -o $(OUTPUT)/$@ $(COMPILED_OBJECTS) \
 		-Wl,--start-group -lm $(CORE_LIB) -Wl,--end-group
 
